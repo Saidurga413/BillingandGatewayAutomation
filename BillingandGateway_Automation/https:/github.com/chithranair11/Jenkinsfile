@@ -1,0 +1,66 @@
+pipeline {
+         agent any
+
+             stages {
+
+                 stage('Source') {
+
+                    steps {
+
+                        checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/chithranair11/BillingandGatewayAutomation.git']]])// Common git hub repository URL.
+
+                         }        
+
+                 }
+
+                  stage('Build') {
+
+                          tools {
+
+                                jdk 'jdk8'// JDK name which is given in jenkins under global tool configuration.
+
+                                maven 'Maven'//Maven name which is given in jenkins under global tool configuration
+
+                            }
+
+                            steps {
+
+                                     dir("UMAuto"){//needs to mention folder name if we are having any folders in the repository otherwise no need to mention dir.
+
+                               powershell 'mvn clean package'
+
+                                     }
+
+                            }
+
+                  }
+
+                  stage('Code Quality') {
+
+                   steps {
+
+                            dir("UMAuto"){
+
+                        script{
+
+                             withSonarQubeEnv(installationName: 'SonarQube'){// SonarQube name which is given in jenkins under configuration
+
+                                    bat label: '', script: 'mvn sonar:sonar'
+
+                             }
+
+                        }
+
+                            }
+
+                  }
+
+ 
+
+                }
+
+             }
+
+ 
+
+}
